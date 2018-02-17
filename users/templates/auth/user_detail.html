@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{ user }}</title>
+<style type="text/css">
+body {
+	background-color: #fcfcfc;
+}
+.center-div {
+	position: absolute;
+	margin: auto;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 200px;
+	height: 150px;
+	background-color: #ccc;
+	border-radius: 3px;
+	text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="center-div">
+	<p>{{ user }}</p>
+	<p>{{ user.first_name }}</p>
+	<p>{{ user.last_name }}</p>
+</div>
+</body>
+</html>
