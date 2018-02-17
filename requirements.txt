@@ -1,0 +1,6 @@
+Django==2.0.2
+django-configurations==2.0
+psycopg2-binary==2.7.4
+django-extensions==1.9.9
+prospector==0.12.7
+raven==6.5.0
