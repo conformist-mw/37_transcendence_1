@@ -1,12 +1,12 @@
 import os
 import raven
-from configurations import Configuration
+from configurations import Configuration, values
 
 
 class BaseConfig(Configuration):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    SECRET_KEY = os.getenv('SECRET_KEY', '')
-    ALLOWED_HOSTS = ['*']
+    SECRET_KEY = values.SecretValue(environ_name='SECRET_KEY')
+    ALLOWED_HOSTS = []
     ROOT_URLCONF = 'transcendence.urls'
     LANGUAGE_CODE = 'en-us'
     TIME_ZONE = 'UTC'
@@ -53,17 +53,7 @@ class BaseConfig(Configuration):
             },
         },
     ]
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_DATABASE', 'transcendence'),
-            'USER': os.getenv('POSTGRES_USER', 'transcendence'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-            'PORT': os.getenv('POSTGRES_PORT', '5432')
-        }
-    }
+    DATABASES = values.DatabaseURLValue(values.Value(environ_name='DB_URI'))
 
     AUTH_PASSWORD_VALIDATORS = [
         {
@@ -81,12 +71,13 @@ class BaseConfig(Configuration):
     ]
 
     RAVEN_CONFIG = {
-        'dsn': os.getenv('RAVEN_SECRET', ''),
+        'dsn': values.Value(environ_name='RAVEN_SECRET'),
         'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
     }
 
 
 class Dev(BaseConfig):
+    ALLOWED_HOSTS = ['*']
     DEBUG = True
 
 
