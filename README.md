@@ -1,6 +1,6 @@
 # Transcendence project
 
-This project will be a social network for science targets.
+This project will be a social network for science targets. Available at [conformist.pp.ua](https://transcendence.conformist.pp.ua/)
 
 # Installation Guide
 
