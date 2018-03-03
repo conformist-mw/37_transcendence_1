@@ -96,7 +96,6 @@ def nginx_setup():
         template_dir='server'
     )
     run('ln -s /etc/nginx/sites-available/{PROJECT_NAME}.conf /etc/nginx/sites-enabled/'.format(**env))
-    run('rm -f /etc/nginx/sites-enabled/default')
     run('systemctl restart nginx.service')
 
 
