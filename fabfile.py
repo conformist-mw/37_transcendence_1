@@ -24,7 +24,7 @@ def install_system_libs():
     run('apt -y install sudo git python3-venv python3-pip nginx postgresql-9.6')
 
 
-def create_dir_with_project():
+def create_or_update_dir_with_project():
     run('mkdir -p {BASE_DIR}'.format(**env))
     with cd(env.BASE_DIR):
         run('git clone {REPO} .'.format(**env))
@@ -41,27 +41,27 @@ def install_requirements():
         run('{PYTHON} -m pip install -r requirements.txt'.format(**env))
 
 
-def postgres_setup():
+def create_project_database():
     sudo('psql -c "create user {PROJECT_NAME} with encrypted PASSWORD E\'{PASSWORD}\'"'.format(**env), user='postgres')
     sudo('psql -c "create database {PROJECT_NAME} with owner {PROJECT_NAME}"'.format(**env), user='postgres')
 
 
-def migrate_and_collectstatic():
+def migrate_and_collect_static(is_new=False):
     with cd(env.BASE_DIR), shell_env(
             DJANGO_DB_URI=env.DB_URI,
             DJANGO_SECRET_KEY=env.SECRET_KEY
     ):
-        run('echo $DJANGO_DB_URI')
         run('{PYTHON} manage.py migrate --noinput'.format(**env))
         run('{PYTHON} manage.py collectstatic --noinput'.format(**env))
-        run_command = (
-            "from django.contrib.auth.models import User;"
-            "User.objects.create_superuser('admin', 'admin@example.com', '{PASSWORD}');".format(**env)
-        )
-        run('{} manage.py shell -c "{}"'.format(env.PYTHON, run_command))
+        if is_new:
+            run_command = (
+                "from django.contrib.auth.models import User;"
+                "User.objects.create_superuser('admin', 'admin@example.com', '{PASSWORD}');".format(**env)
+            )
+            run('{} manage.py shell -c "{}"'.format(env.PYTHON, run_command))
 
 
-def service_setup():
+def install_systemd_project_service():
     destination = '/etc/systemd/system/{PROJECT_NAME}.service'.format(**env)
     context = {
         'PROJECT_NAME': env.PROJECT_NAME,
@@ -76,12 +76,12 @@ def service_setup():
         destination,
         context=context,
         use_jinja=True,
-        template_dir='server'
+        template_dir='server_templates'
     )
     run('systemctl enable --now {PROJECT_NAME}.service'.format(**env))
 
 
-def nginx_setup():
+def install_nginx_project_conf():
     destination = '/etc/nginx/sites-available/{PROJECT_NAME}.conf'.format(**env)
     context = {
         'DOMAIN': env.DOMAIN,
@@ -93,7 +93,7 @@ def nginx_setup():
         destination,
         context=context,
         use_jinja=True,
-        template_dir='server'
+        template_dir='server_templates'
     )
     run('ln -s /etc/nginx/sites-available/{PROJECT_NAME}.conf /etc/nginx/sites-enabled/'.format(**env))
     run('systemctl restart nginx.service')
@@ -101,19 +101,20 @@ def nginx_setup():
 
 def fresh_install():
     install_system_libs()
-    create_dir_with_project()
+    create_or_update_dir_with_project()
     create_virtualenv()
     install_requirements()
-    postgres_setup()
-    migrate_and_collectstatic()
-    service_setup()
-    nginx_setup()
+    create_project_database()
+    migrate_and_collect_static(is_new=True)
+    install_systemd_project_service()
+    install_nginx_project_conf()
 
 
 def bootstrap():
     set_env()
     if exists(env.BASE_DIR):
-        create_dir_with_project()
+        create_or_update_dir_with_project()
+        migrate_and_collect_static()
         run('systemctl restart {PROJECT_NAME}.service'.format(**env))
     else:
         fresh_install()
