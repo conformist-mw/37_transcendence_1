@@ -1,70 +1,75 @@
 import os
 from fabric.contrib.files import upload_template, exists
-from fabric.api import env, run, cd, prefix, sudo, shell_env
-from contextlib import contextmanager
+from fabric.api import env, run, cd, sudo, shell_env
 
 env.hosts = ['dev']
 env.use_ssh_config = True
 
 
-@contextmanager
-def venv_in_project_dir():
-    with cd(env.base_dir):
-        with prefix('source {venv_dir}/bin/activate'.format(**env)):
-            yield
-
-
 def set_env():
-    env.project_name = 'transcendence'
-    env.base_dir = '/opt/{project_name}'.format(**env)
-    env.venv_dir = os.path.join('/opt', '.venv', '{project_name}'.format(**env))
-    env.repo = os.getenv('GIT_REPO')
-    env.db_uri = os.getenv('DJANGO_DB_URI')
-    env.password = os.getenv('DB_PASSWORD')
-    env.secret_key = os.getenv('DJANGO_SECRET_KEY')
-    env.raven_secret = os.getenv('DJANGO_RAVEN_SECRET')
-    env.domain = os.getenv('DOMAIN')
-
-
-def setup():
-    run('mkdir -p {base_dir}'.format(**env))
-    with cd(env.base_dir):
-        run('git clone {repo} .'.format(**env))
-    with venv_in_project_dir():
-        run('pip install --upgrade pip')
-        run('pip install -r requirements.txt')
-        with shell_env(
-            DJANGO_DB_URI=env.db_uri,
-            DJANGO_SECRET_KEY=env.secret_key
-        ):
-            run('python manage.py migrate --noinput')
-            run('python manage.py collectstatic --noinput')
-            run_command = (
-                "from django.contrib.auth.models import User;"
-                "User.objects.create_superuser('admin', 'admin@example.com', '{password}');".format(**env)
-            )
-            run('python manage.py shell -c "{}"'.format(run_command))
-    run('chown -R www-data: {base_dir}'.format(**env))
-
-
-def create_virtualenv():
-    run('python3 -m venv {venv_dir}'.format(**env))
+    env.PROJECT_NAME = os.getenv('PROJECT_NAME')
+    env.BASE_DIR = '/opt/{PROJECT_NAME}'.format(**env)
+    env.VENV_DIR = os.path.join('/opt', '.venv', '{PROJECT_NAME}'.format(**env))
+    env.PYTHON = os.path.join(env.VENV_DIR, 'bin', 'python')
+    env.REPO = os.getenv('GIT_REPO')
+    env.DB_URI = os.getenv('DJANGO_DB_URI')
+    env.PASSWORD = os.getenv('DB_PASSWORD')
+    env.SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+    env.RAVEN_SECRET = os.getenv('DJANGO_RAVEN_SECRET')
+    env.DOMAIN = os.getenv('DOMAIN')
 
 
 def install_system_libs():
     run('apt update')
-    run('apt -y install sudo git python3-venv python3-pip nginx postgresql')
+    run('apt -y install sudo git python3-venv python3-pip nginx postgresql-9.6')
+
+
+def create_dir_with_project():
+    run('mkdir -p {BASE_DIR}'.format(**env))
+    with cd(env.BASE_DIR):
+        run('git clone {REPO} .'.format(**env))
+    run('chown -R www-data: {BASE_DIR}'.format(**env))
+
+
+def create_virtualenv():
+    run('python3 -m venv {VENV_DIR}'.format(**env))
+    run('{PYTHON} -m pip install --upgrade pip'.format(**env))
+
+
+def install_requirements():
+    with cd(env.BASE_DIR):
+        run('{PYTHON} -m pip install -r requirements.txt'.format(**env))
+
+
+def postgres_setup():
+    sudo('psql -c "create user {PROJECT_NAME} with encrypted PASSWORD E\'{PASSWORD}\'"'.format(**env), user='postgres')
+    sudo('psql -c "create database {PROJECT_NAME} with owner {PROJECT_NAME}"'.format(**env), user='postgres')
+
+
+def migrate_and_collectstatic():
+    with cd(env.BASE_DIR), shell_env(
+            DJANGO_DB_URI=env.DB_URI,
+            DJANGO_SECRET_KEY=env.SECRET_KEY
+    ):
+        run('echo $DJANGO_DB_URI')
+        run('{PYTHON} manage.py migrate --noinput'.format(**env))
+        run('{PYTHON} manage.py collectstatic --noinput'.format(**env))
+        run_command = (
+            "from django.contrib.auth.models import User;"
+            "User.objects.create_superuser('admin', 'admin@example.com', '{PASSWORD}');".format(**env)
+        )
+        run('{} manage.py shell -c "{}"'.format(env.PYTHON, run_command))
 
 
 def service_setup():
-    destination = '/etc/systemd/system/{project_name}.service'.format(**env)
+    destination = '/etc/systemd/system/{PROJECT_NAME}.service'.format(**env)
     context = {
-        'project_name': env.project_name,
-        'venv_dir': env.venv_dir,
-        'base_dir': env.base_dir,
-        'db_uri': env.db_uri,
-        'secret_key': env.secret_key,
-        'raven_secret': env.raven_secret
+        'PROJECT_NAME': env.PROJECT_NAME,
+        'VENV_DIR': env.VENV_DIR,
+        'BASE_DIR': env.BASE_DIR,
+        'DB_URI': env.DB_URI,
+        'SECRET_KEY': env.SECRET_KEY,
+        'RAVEN_SECRET': env.RAVEN_SECRET
     }
     upload_template(
         'systemd.service',
@@ -73,15 +78,15 @@ def service_setup():
         use_jinja=True,
         template_dir='server'
     )
-    run('systemctl enable --now {project_name}.service'.format(**env))
+    run('systemctl enable --now {PROJECT_NAME}.service'.format(**env))
 
 
 def nginx_setup():
-    destination = '/etc/nginx/sites-available/{project_name}.conf'.format(**env)
+    destination = '/etc/nginx/sites-available/{PROJECT_NAME}.conf'.format(**env)
     context = {
-        'domain': env.domain,
-        'base_dir': env.base_dir,
-        'project_name': env.project_name
+        'DOMAIN': env.DOMAIN,
+        'BASE_DIR': env.BASE_DIR,
+        'PROJECT_NAME': env.PROJECT_NAME
     }
     upload_template(
         'nginx.conf',
@@ -90,43 +95,27 @@ def nginx_setup():
         use_jinja=True,
         template_dir='server'
     )
-    run('ln -s /etc/nginx/sites-available/{project_name}.conf /etc/nginx/sites-enabled/'.format(**env))
+    run('ln -s /etc/nginx/sites-available/{PROJECT_NAME}.conf /etc/nginx/sites-enabled/'.format(**env))
     run('rm -f /etc/nginx/sites-enabled/default')
     run('systemctl restart nginx.service')
-
-
-def postgres_setup():
-    sudo('psql -c "create user {project_name} with encrypted password E\'{password}\'"'.format(**env), user='postgres')
-    sudo('psql -c "create database {project_name} with owner {project_name}"'.format(**env), user='postgres')
-
-
-def remove():
-    set_env()
-    run('systemctl stop {project_name}.service'.format(**env))
-    run('systemctl disable {project_name}.service'.format(**env))
-    run('rm /etc/systemd/system/{project_name}.service'.format(**env))
-    run('systemctl daemon-reload')
-    run('rm -f /etc/nginx/sites-enabled/{project_name}.conf'.format(**env))
-    run('rm -rf {base_dir}'.format(**env))
-    run('rm -rf {venv_dir}'.format(**env))
-    sudo('dropdb {project_name}'.format(**env), user='postgres')
-    sudo('dropuser {project_name}'.format(**env), user='postgres')
-    run('apt -y autoremove nginx postgresql-9.6')
 
 
 def fresh_install():
     set_env()
     install_system_libs()
+    create_dir_with_project()
     create_virtualenv()
+    install_requirements()
     postgres_setup()
-    setup()
+    migrate_and_collectstatic()
     service_setup()
     nginx_setup()
 
 
 def bootstrap():
     set_env()
-    if exists('{base_dir}'.format(**env)):
-        setup()
+    if exists(env.BASE_DIR):
+        create_dir_with_project()
+        run('systemctl restart {PROJECT_NAME}.service'.format(**env))
     else:
         fresh_install()
