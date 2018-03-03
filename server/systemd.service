@@ -1,15 +1,15 @@
 [Unit]
-Description={{ project_name }} gunicorn daemon
+Description={{ PROJECT_NAME }} gunicorn daemon
 After=network.target
 
 [Service]
 User=www-data
 Group=www-data
-Environment=DJANGO_DB_URI={{ db_uri }}
-Environment=DJANGO_SECRET_KEY={{ secret_key }}
-Environment=DJANGO_RAVEN_SECRET={{ raven_secret }}
-WorkingDirectory={{ base_dir }}
-ExecStart={{ venv_dir }}/bin/gunicorn --access-logfile - --workers 3 --bind unix:{{ base_dir }}/{{ project_name }}.sock {{ project_name }}.wsgi:application
+Environment=DJANGO_DB_URI={{ DB_URI }}
+Environment=DJANGO_SECRET_KEY={{ SECRET_KEY }}
+Environment=DJANGO_RAVEN_SECRET={{ RAVEN_SECRET }}
+WorkingDirectory={{ BASE_DIR }}
+ExecStart={{ VENV_DIR }}/bin/gunicorn --access-logfile - --workers 3 --bind unix:{{ BASE_DIR }}/{{ PROJECT_NAME }}.sock {{ PROJECT_NAME }}.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
