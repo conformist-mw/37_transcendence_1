@@ -100,7 +100,6 @@ def nginx_setup():
 
 
 def fresh_install():
-    set_env()
     install_system_libs()
     create_dir_with_project()
     create_virtualenv()
