@@ -1,6 +1,7 @@
 import os
 from fabric.contrib.files import upload_template, exists
 from fabric.api import env, run, cd, sudo, shell_env
+from fabric.context_managers import settings
 
 env.hosts = ['dev']
 env.use_ssh_config = True
@@ -26,7 +27,7 @@ def install_system_libs():
 
 def create_or_update_dir_with_project():
     run('mkdir -p {BASE_DIR}'.format(**env))
-    with cd(env.BASE_DIR):
+    with cd(env.BASE_DIR):  # noqa
         run('git clone {REPO} .'.format(**env))
     run('chown -R www-data: {BASE_DIR}'.format(**env))
 
@@ -54,11 +55,11 @@ def migrate_and_collect_static(is_new=False):
         run('{PYTHON} manage.py migrate --noinput'.format(**env))
         run('{PYTHON} manage.py collectstatic --noinput'.format(**env))
         if is_new:
-            run_command = (
-                "from django.contrib.auth.models import User;"
-                "User.objects.create_superuser('admin', 'admin@example.com', '{PASSWORD}');".format(**env)
-            )
-            run('{} manage.py shell -c "{}"'.format(env.PYTHON, run_command))
+            with settings(prompts={
+                "Password: ": env.PASSWORD,
+                "Password (again): ": env.PASSWORD
+            }):
+                run('{PYTHON} manage.py createsuperuser --username admin --email admin@admin.com')
 
 
 def install_systemd_project_service():
