@@ -1,13 +1,12 @@
 language: python
 python:
-  - '3.6'
-
+- '3.6'
 env:
+  matrix:
   - DJANGO_SETTINGS_MODULE='transcendence.settings'
   - DJANGO_CONFIGURATION='Production'
-
-install:
-  pip install -r requirements.txt
-
+  global:
+    secure: PeT/7hWLn1d6iba+onTNHApibjqFYsOF9CGSQI5hAwh53xKEzKZXnku0ijewwSWUCUxijIpPAX/f+a+q9Oyx9sva2e3EBmZn8yRAxWwB2+0lQxdtcSrMg3f/Eo7CbP10MEajjpwID7ml8bQVHrIuiuL7t/55KD3CFw3Drl6MiYSKelRu92ZpLORN2R3EyAxVEIIKTP07RxOOzx6YaXticfPTdpjnoyCUEnaYJr2aK8DuTvADJ3uL0l4+PDYFYFqg4bCimR1nNncJ32i32srzXbDqVoV8abDzqYyOqAY3pPkl1Rp3+Qu/Y6Um+ufhUAcliepjPoH5s4ccqQ7ndVUnZLZwi73gPR4AEG3ugtKlaCIjyOBl1knYU6HyNvpDZtRJV3mS5TF1LTFUpagdZZ7X3Dztv3nNKDA88uFOW4yxhClfWciVuN0/od5qQ0PzhYZjMABLPQK2/NcSF9Fqd9VfTLctpZhBIjlgxNXXYK3tS9awzpJm3VJItEFvQfKBE5NvYa7FrdLUztQQcCqlMXfEbXhM1qNCJeuLjOiAewWp1mM3648kBY2NLSgSRmeeEbTap/9Khl1kwVYFNB+6xgWa1slNNkV07v5aiWdbn/Wfm4WfR+qb+dntDF5HNQqD2SK2BbUPJ1/+QmbHNsW+NFqwwmf4ElowUMC2oMfV41xaOuw=
+install: pip install -r requirements.txt
 script:
-  - 'python manage.py test'
+- python manage.py test
