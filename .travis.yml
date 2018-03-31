@@ -1,0 +1,13 @@
+language: python
+python:
+  - '3.6'
+
+env:
+  - DJANGO_SETTINGS_MODULE='transcendence.settings'
+  - DJANGO_CONFIGURATION='Production'
+
+install:
+  pip install -r requirements.txt
+
+script:
+  - pytest

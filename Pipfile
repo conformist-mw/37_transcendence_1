@@ -12,6 +12,7 @@ django-configurations = "*"
 django-extensions = "*"
 "psycopg2-binary" = "*"
 raven = "*"
+pytest = "*"
 
 [dev-packages]
 "Jinja2" = "*"

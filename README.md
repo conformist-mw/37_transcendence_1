@@ -1,4 +1,4 @@
-# Transcendence project
+# Transcendence project [![Build Status](https://travis-ci.org/conformist-mw/37_transcendence_1.svg?branch=master)](https://travis-ci.org/conformist-mw/37_transcendence_1)
 
 This project will be a social network for science targets. Available at [conformist.pp.ua](https://transcendence.conformist.pp.ua/)
 
