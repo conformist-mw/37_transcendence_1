@@ -27,7 +27,7 @@ def install_system_libs():
 
 def create_or_update_dir_with_project():
     run('mkdir -p {BASE_DIR}'.format(**env))
-    with cd(env.BASE_DIR):  # noqa
+    with cd(env.BASE_DIR):
         run('git clone {REPO} .'.format(**env))
     run('chown -R www-data: {BASE_DIR}'.format(**env))
 
@@ -43,8 +43,8 @@ def install_requirements():
 
 
 def create_project_database():
-    sudo('psql -c "create user {PROJECT_NAME} with encrypted PASSWORD E\'{PASSWORD}\'"'.format(**env), user='postgres')
-    sudo('psql -c "create database {PROJECT_NAME} with owner {PROJECT_NAME}"'.format(**env), user='postgres')
+    sudo('psql -c "create user {PROJECT_NAME} with encrypted PASSWORD E\'{PASSWORD}\'"'.format(**env), user='postgres')  # noqa
+    sudo('psql -c "create database {PROJECT_NAME} with owner {PROJECT_NAME}"'.format(**env), user='postgres')  # noqa
 
 
 def migrate_and_collect_static(is_new=False):
@@ -59,7 +59,7 @@ def migrate_and_collect_static(is_new=False):
                 "Password: ": env.PASSWORD,
                 "Password (again): ": env.PASSWORD
             }):
-                run('{PYTHON} manage.py createsuperuser --username admin --email admin@admin.com')
+                run('{PYTHON} manage.py createsuperuser --username admin --email admin@admin.com')  # noqa
 
 
 def install_systemd_project_service():
@@ -96,7 +96,7 @@ def install_nginx_project_conf():
         use_jinja=True,
         template_dir='server_templates'
     )
-    run('ln -s /etc/nginx/sites-available/{PROJECT_NAME}.conf /etc/nginx/sites-enabled/'.format(**env))
+    run('ln -s /etc/nginx/sites-available/{PROJECT_NAME}.conf /etc/nginx/sites-enabled/'.format(**env))  # noqa
     run('systemctl restart nginx.service')
 
 
