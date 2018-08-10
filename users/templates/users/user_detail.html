@@ -1,31 +1,80 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ user }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'users/css/fonts.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'users/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 <style type="text/css">
-body {
-    background-color: #fcfcfc;
-}
-.center-div {
-    position: absolute;
-    margin: auto;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 200px;
-    height: 150px;
-    background-color: #ccc;
-    border-radius: 3px;
-    text-align: center;
-}
+    div.navbar-nav * {
+      display: inline-flex;
+      color: white;
+    }
+    body {
+      background-color: #edeef0;
+    }
+    .page-block {
+      background-color: white;
+    }
 </style>
 </head>
 <body>
-<div class="center-div">
-    <p>{{ user }}</p>
-    <p>{{ user.first_name }}</p>
-    <p>{{ user.last_name }}</p>
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1565C0;">
+  <div class="container">
+    <a href="#" class="navbar-brand">Transcendence</a>
+    <div class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+          <span class="navbar-text mr-1"><i class="material-icons">account_circle</i>{{ user.first_name }}</span>
+          <span><a class="nav-link" href="/logout"><i class="material-icons">exit_to_app</i> Logout</a></span>
+        {% else %}
+          <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
+        {% endif %}
+    </div>
+  </div>
+</nav>
+<div class="container" role="main">
+  <div class="row">
+    <div class="col-4 p-2">
+      <div class="page-block">
+        <img class="rounded img-fluid p-2" src="https://images.vexels.com/media/users/3/145908/preview2/52eabf633ca6414e60a7677b0b917d92-male-avatar-maker.jpg">
+      </div>
+    </div>
+    <div class="col-8 p-2">
+      <div class="page-block">
+        <div class="p-2">
+          <h1>{{ user }}</h1>
+          <p class="text-muted">{{ user.status }}</p>
+          <hr>
+          <div>
+            <span class="h5">Birthday:</span><span class="ml-2">{{ user.birthday }}</span>
+          </div>
+          <div>
+            <span class="h5">Hometown:</span><span class="ml-2">Unlock this feature</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+<footer class="fixed-bottom navbar navbar-light bg-light">
+  <div class="container">
+    <div>
+      <a href="http://github.com/conformist-mw" class="navbar-brand">
+        <i class="fab fa-github-square fa-lg"></i><strong class="ml-2">conformist</strong>
+      </a>
+    </div>
+    <div class="ml-auto">
+      <a href="https://devman.org" class="navbar-brand">
+        <i class="fas fa-heart fa-lg"></i><strong class="ml-2">Devman</strong>
+      </a>
+    </div>
+  </div>
+</footer>
+<script src="{% static 'users/js/jquery-3.2.1.slim.min.js' %}"></script>
+<script src="{% static 'users/js/popper.min.js' %}"></script>
+<script src="{% static 'users/js/bootstrap.min.js' %}"></script>
 </body>
 </html>
