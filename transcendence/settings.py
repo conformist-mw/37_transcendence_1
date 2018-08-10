@@ -1,10 +1,11 @@
-import os
+from pathlib import Path
+
 import raven
 from configurations import Configuration, values
 
 
 class BaseConfig(Configuration):
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    BASE_DIR = Path(__file__).resolve().parents[1]
     SECRET_KEY = values.SecretValue(environ_name='SECRET_KEY')
     ALLOWED_HOSTS = []
     ROOT_URLCONF = 'transcendence.urls'
@@ -14,8 +15,9 @@ class BaseConfig(Configuration):
     USE_L10N = True
     USE_TZ = True
     STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+    STATIC_ROOT = BASE_DIR / 'static'
     WSGI_APPLICATION = 'transcendence.wsgi.application'
+    AUTH_USER_MODEL = 'users.User'
 
     INSTALLED_APPS = [
         'django.contrib.admin',
@@ -25,11 +27,11 @@ class BaseConfig(Configuration):
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'django_extensions',
-        'users',
+        'users.apps.UsersConfig',
         'raven.contrib.django.raven_compat',
     ]
     MIDDLEWARE = [
-        'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
+        'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',  # noqa
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
@@ -58,22 +60,22 @@ class BaseConfig(Configuration):
 
     AUTH_PASSWORD_VALIDATORS = [
         {
-            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+            'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',  # noqa
         },
         {
-            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+            'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',  # noqa
         },
         {
-            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+            'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',  # noqa
         },
         {
-            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+            'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',  # noqa
         },
     ]
 
     RAVEN_CONFIG = {
         'dsn': values.Value(environ_name='RAVEN_SECRET'),
-        'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
+        'release': raven.fetch_git_sha(BASE_DIR),
     }
 
 
