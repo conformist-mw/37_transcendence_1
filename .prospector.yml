@@ -1,0 +1,18 @@
+inherits:
+  - strictness_medium
+
+pep8:
+  options:
+    max-line-length: 80
+
+pylint:
+  disable:
+    - arguments-differ
+    - not-context-manager
+    - inconsistent-return-statements
+
+uses:
+  - django
+
+ignore-patterns:
+  - (^|/)migrations(/|$)

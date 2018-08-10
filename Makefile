@@ -7,8 +7,8 @@ run-global:
 run-prod:
 	python manage.py runserver 0:8000 --settings=transcendence.settings --configuration=Production
 
-mkmigrations:
-	python manage.py mkmigrations --settings=transcendence.settings --configuration=Dev
+migrations:
+	python manage.py makemigrations --settings=transcendence.settings --configuration=Dev
 
 migrate:
 	python manage.py migrate --settings=transcendence.settings --configuration=Dev
@@ -20,4 +20,4 @@ shell:
 	python manage.py shell_plus --settings=transcendence.settings --configuration=Dev
 
 inspect:
-	prospector --strictness medium || :
+	prospector || :
