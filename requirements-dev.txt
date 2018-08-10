@@ -1,0 +1,6 @@
+-r requirements.txt
+Fabric3==1.14.post1
+ipython==6.2.1
+pipdeptree==0.13.0
+prospector==0.12.7
+pytest==3.5.0

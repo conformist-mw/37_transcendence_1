@@ -1,8 +1,9 @@
+certifi==2018.1.18
 dj-database-url==0.5.0
+Django==2.0.3
 django-configurations==2.0
 django-extensions==2.0.6
-django==2.0.3
 gunicorn==19.7.1
+Pillow==5.2.0
 psycopg2-binary==2.7.4
-pytest==3.5.0
 raven==6.6.0
