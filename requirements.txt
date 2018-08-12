@@ -7,3 +7,4 @@ gunicorn==19.7.1
 Pillow==5.2.0
 psycopg2-binary==2.7.4
 raven==6.6.0
+mimesis==2.1.0
