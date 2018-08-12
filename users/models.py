@@ -8,6 +8,12 @@ from .managers import UserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
 
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('C', 'Custom'),
+    )
+
     email = models.EmailField(
         unique=True,
         verbose_name='Email Address',
@@ -16,7 +22,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     username = models.CharField(max_length=30, unique=True)
-    birthday = models.DateTimeField(blank=True, null=True)
+    birthday = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     status = models.CharField(max_length=255, blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     date_joined = models.DateTimeField(default=timezone.now)

@@ -8,7 +8,7 @@ from .models import User
 
 @receiver(post_save, sender=User)
 def add_username(sender, instance, created, **kwargs):  # noqa
-    if created:
+    if created and not instance.username:
         user_fake_id_gen = count(User.objects.count())
         username = f'user_{next(user_fake_id_gen)}'
         while User.objects.filter(username=username).exists():
