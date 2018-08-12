@@ -16,6 +16,8 @@ class BaseConfig(Configuration):
     USE_TZ = True
     STATIC_URL = '/static/'
     STATIC_ROOT = BASE_DIR / 'static'
+    MEDIA_ROOT = BASE_DIR
+    MEDIA_URL = '/media/'
     WSGI_APPLICATION = 'transcendence.wsgi.application'
     AUTH_USER_MODEL = 'users.User'
 
